@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI-Powered Mental Health Chatbot for Students
 
+This project is an AI-powered chatbot or virtual assistant designed to provide mental health and emotional support to students. The chatbot leverages Gemini's advanced natural language understanding and empathy capabilities to offer supportive, non-judgmental, and caring responses. It is built using [Next.js](https://nextjs.org) and the [Gemini API](https://developers.google.com/generative-ai) to ensure real-time, responsive interactions.
+
+hosted on - https://geminimind-iota.vercel.app/
+
+## Features
+
+- **Empathetic Conversations**: Uses Gemini's empathy-driven responses to provide mental health support, promoting emotional well-being for students.
+- **Non-Judgmental Support**: Offers caring, supportive responses without judgment, encouraging open communication.
+- **AI-Powered Interactions**: Leverages natural language understanding for smooth, intelligent conversations.
+- **Personalized Support**: Customizable to respond to individual needs and concerns.
+- **Next.js**: A fast and scalable front-end framework for building the chatbot interface.
+
+## Tech Stack
+
+- **Next.js**: The web framework used for building the chatbot interface.
+- **Gemini API**: Provides the AI-driven natural language processing and empathetic response system.
+- **React**: Powers the dynamic user interface.
+- **Node.js**: Backend integration for handling API requests and responses.
+  
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Before running the project, make sure you have:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Node.js installed: [Download](https://nodejs.org/)
+- A Gemini API key from [Google Developers](https://developers.google.com/generative-ai).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Installation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Clone the repository**:
+    ```bash
+    git clone https://github.com/your-username/ai-mental-health-chatbot.git
+    cd ai-mental-health-chatbot
+    ```
 
-## Learn More
+2. **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+3. **Configure Gemini API**:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+   Create a `.env.local` file at the root of the project with your Gemini API key:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+    ```
+    GEMINI_API_KEY=your_gemini_api_key
+    ```
 
-## Deploy on Vercel
+4. **Run the development server**:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+    ```bash
+    npm run dev
+    ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+   The app will be accessible at `http://localhost:3000`.
+
+### Deployment
+
+To deploy the application:
+
+1. **Build the project**:
+    ```bash
+    npm run build
+    ```
+
+2. **Start the production server**:
+    ```bash
+    npm start
+    ```
+
+For more detailed deployment steps, refer to [Next.js deployment documentation](https://nextjs.org/docs/deployment).
+
+## Usage
+
+1. **Open the chatbot interface**: Once the development server is running, go to `http://localhost:3000`.
+2. **Start a conversation**: Engage with the chatbot, which will provide empathetic responses tailored to mental health and emotional well-being.
+3. **Customization**: Modify the chatbot's behavior and responses by adjusting API settings and fine-tuning the Next.js components.
+
+## Contributing
+
+Contributions are welcome! Please follow these steps to contribute:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature-branch`).
+3. Commit your changes (`git commit -m 'Add new feature'`).
+4. Push to the branch (`git push origin feature-branch`).
+5. Open a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+**Disclaimer**: This chatbot is an AI tool designed to provide support, but it is not a substitute for professional mental health care. For serious mental health concerns, please seek help from a licensed professional.
