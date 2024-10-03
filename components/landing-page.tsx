@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence, useSpring } from 'framer-motion'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, useScroll, useTransform, AnimatePresence, useSpring, useAnimation } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Brain, MessageCircle, Heart, Shield, Send, Menu, X, Star, Users, Zap, Check, Quote, Info, Loader2, ArrowRight, Sparkles, Lightbulb, Smile, Moon, Sun } from 'lucide-react'
+import { Brain, MessageCircle, Heart, Shield, Send, Menu, X, Star, Users, Zap, Check, Quote, Info, Loader2, ArrowRight, Sparkles, Lightbulb, Smile, Moon, Sun, Mic, MicOff } from 'lucide-react'
 import Link from 'next/link'
 import {
   Tooltip,
@@ -15,6 +15,14 @@ import {
 } from "@/components/ui/tooltip"
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"
 
+// Add type declarations for SpeechRecognition
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 const MODEL_NAME = "gemini-1.0-pro"
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string
 
@@ -23,13 +31,17 @@ You are a supportive and empathetic AI assistant designed to provide mental heal
 You offer real-time coping strategies in moments of distress and provide positive reflection through automated journaling. You collaborate with the user to create mental health action plans and adapt your guidance based on what works best for them. Always remind the user that you are an AI, encourage self-care, and suggest professional help when needed.
 `
 
+
 function ChatInterface() {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hello! I'm GeminiMind, your AI companion. How can I support you today?" }
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [isListening, setIsListening] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const micControls = useAnimation()
+  const recognitionRef = useRef<SpeechRecognition | null>(null)
 
   useEffect(() => {
     scrollToBottom()
@@ -60,6 +72,49 @@ function ChatInterface() {
       setIsTyping(false)
     }
   }
+
+  const toggleVoiceInput = useCallback(() => {
+    if (!isListening) {
+      startListening()
+    } else {
+      stopListening()
+    }
+  }, [isListening])
+
+  const startListening = useCallback(() => {
+    setIsListening(true)
+    micControls.start({
+      scale: [1, 1.2, 1],
+      transition: { duration: 0.5, repeat: Infinity }
+    })
+
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    recognitionRef.current = new SpeechRecognition()
+    recognitionRef.current.continuous = true
+    recognitionRef.current.interimResults = true
+
+    recognitionRef.current.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join('')
+      setInput(transcript)
+    }
+
+    recognitionRef.current.onerror = (event: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error', event.error)
+      stopListening()
+    }
+
+    recognitionRef.current.start()
+  }, [micControls])
+
+  const stopListening = useCallback(() => {
+    setIsListening(false)
+    micControls.stop()
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+    }
+  }, [micControls])
 
   async function runChat(prompt: string) {
     const genAI = new GoogleGenerativeAI(API_KEY)
@@ -147,13 +202,18 @@ function ChatInterface() {
               transition={{ duration: 0.3 }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-[80%] p-3 rounded-lg ${
-                message.role === 'user' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted'
-              }`}>
+              <motion.div 
+                className={`max-w-[80%] p-3 rounded-lg ${
+                  message.role === 'user' 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted'
+                }`}
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              >
                 <p className="text-sm">{message.content}</p>
-              </div>
+              </motion.div>
             </motion.div>
           ))}
         </AnimatePresence>
@@ -179,6 +239,12 @@ function ChatInterface() {
             onChange={(e) => setInput(e.target.value)}
             className="flex-1"
           />
+          <motion.div animate={micControls}>
+            <Button type="button" size="icon" onClick={toggleVoiceInput} className={isListening ? 'bg-primary text-primary-foreground' : ''}>
+              {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              <span className="sr-only">{isListening ? 'Stop voice input' : 'Start voice input'}</span>
+            </Button>
+          </motion.div>
           <Button type="submit" size="icon" disabled={isTyping}>
             <Send className="h-5 w-5" />
             <span className="sr-only">Send message</span>
@@ -510,7 +576,7 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05 }}
                 >
                   <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                  <h3 className="text-xl sm:text-2xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">{plan.name}</h3>
+                  <h3 className="text-xl sm:text-2xl font-bol d mb-2 group-hover:text-primary transition-colors duration-300">{plan.name}</h3>
                   <p className="text-2xl sm:text-3xl font-bold mb-4">{plan.price}</p>
                   <ul className="mb-6 space-y-2 flex-grow">
                     {plan.features.map((feature, idx) => (
