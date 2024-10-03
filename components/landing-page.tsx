@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { motion, useScroll, useTransform, AnimatePresence, useSpring, useAnimation } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence, useSpring, useAnimation, useReducedMotion } from 'framer-motion'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/tooltip"
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"
 
-// Add type declarations for SpeechRecognition
 declare global {
   interface Window {
     SpeechRecognition: typeof SpeechRecognition;
@@ -31,7 +30,6 @@ You are a supportive and empathetic AI assistant designed to provide mental heal
 You offer real-time coping strategies in moments of distress and provide positive reflection through automated journaling. You collaborate with the user to create mental health action plans and adapt your guidance based on what works best for them. Always remind the user that you are an AI, encourage self-care, and suggest professional help when needed.
 `
 
-
 function ChatInterface() {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: "Hello! I'm GeminiMind, your AI companion. How can I support you today?" }
@@ -42,6 +40,7 @@ function ChatInterface() {
   const chatEndRef = useRef<HTMLDivElement>(null)
   const micControls = useAnimation()
   const recognitionRef = useRef<SpeechRecognition | null>(null)
+  
 
   useEffect(() => {
     scrollToBottom()
@@ -162,44 +161,85 @@ function ChatInterface() {
     return response.text()
   }
 
+  const chatContainerVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 15
+      }
+    }
+  }
+
+  const messageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      }
+    }
+  }
+
   return (
     <motion.div 
       className="flex flex-col h-[600px] max-w-2xl mx-auto bg-background rounded-xl shadow-xl overflow-hidden border border-primary/20"
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      variants={chatContainerVariants}
+      initial="hidden"
+      animate="visible"
     >
-      <div className="flex items-center justify-between p-4 border-b bg-muted">
-        <div className="flex items-center space-x-2">
+      <motion.div 
+        className="flex items-center justify-between p-4 border-b bg-muted"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.2 }}
+      >
+        <motion.div 
+          className="flex items-center space-x-2"
+          initial={{ x: -20 }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        >
           <Avatar>
             <AvatarImage src="/placeholder.svg?height=40&width=40" alt="GeminiMind" />
             <AvatarFallback><Brain className="h-6 w-6" /></AvatarFallback>
           </Avatar>
           <span className="font-semibold text-lg">GeminiMind</span>
-        </div>
+        </motion.div>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Info className="h-5 w-5" />
-                <span className="sr-only">AI Information</span>
-              </Button>
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Button variant="ghost" size="icon">
+                  <Info className="h-5 w-5" />
+                  <span className="sr-only">AI Information</span>
+                </Button>
+              </motion.div>
             </TooltipTrigger>
             <TooltipContent>
               <p>GeminiMind is an AI assistant designed to provide mental health support.</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
-      </div>
+      </motion.div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <AnimatePresence>
           {messages.map((message, index) => (
             <motion.div
               key={index}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              variants={messageVariants}
+              initial="hidden"
+              animate="visible"
               exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <motion.div 
@@ -224,13 +264,31 @@ function ChatInterface() {
             className="flex justify-start"
           >
             <div className="max-w-[80%] p-3 rounded-lg bg-muted">
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <motion.div
+                animate={{
+                  scale: [1, 1.2, 1],
+                  rotate: [0, 180, 360],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "linear",
+                }}
+              >
+                <Loader2 className="h-5 w-5" />
+              </motion.div>
             </div>
           </motion.div>
         )}
         <div ref={chatEndRef} />
       </div>
-      <form onSubmit={handleSubmit} className="p-4 border-t">
+      <motion.form 
+        onSubmit={handleSubmit} 
+        className="p-4 border-t"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
         <div className="flex space-x-2">
           <Input
             type="text"
@@ -241,16 +299,37 @@ function ChatInterface() {
           />
           <motion.div animate={micControls}>
             <Button type="button" size="icon" onClick={toggleVoiceInput} className={isListening ? 'bg-primary text-primary-foreground' : ''}>
-              {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+              {isListening ? (
+                <motion.div
+                  animate={{
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 180, 360],
+                  }}
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "linear",
+                  }}
+                >
+                  <MicOff className="h-5 w-5" />
+                </motion.div>
+              ) : (
+                <Mic className="h-5 w-5" />
+              )}
               <span className="sr-only">{isListening ? 'Stop voice input' : 'Start voice input'}</span>
             </Button>
           </motion.div>
-          <Button type="submit" size="icon" disabled={isTyping}>
-            <Send className="h-5 w-5" />
-            <span className="sr-only">Send message</span>
-          </Button>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button type="submit" size="icon" disabled={isTyping}>
+              <Send className="h-5 w-5" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </motion.div>
         </div>
-      </form>
+      </motion.form>
     </motion.div>
   )
 }
@@ -265,6 +344,7 @@ export function LandingPage() {
   })
   const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0])
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.8])
+  const shouldReduceMotion = useReducedMotion()
 
   useEffect(() => {
     document.body.style.fontFamily = "'Poppins', sans-serif"
@@ -292,34 +372,136 @@ export function LandingPage() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [x, y])
 
+  const fadeInUpVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        duration: 0.6,
+        type: "spring",
+        stiffness: 100,
+        damping: 10
+      } 
+    }
+  }
+
+  const staggerChildrenVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1, 
+      transition: { 
+        staggerChildren: 0.1,
+        delayChildren: 0.3
+      } 
+    }
+  }
+
+  const floatingAnimation = {
+    y: shouldReduceMotion ? 0 : [0, -10, 0],
+    transition: {
+      duration: 5,
+      repeat: Infinity,
+      repeatType: "reverse" as const,
+      ease: "easeInOut"
+    }
+  }
+
+
   return (
     <div className={`flex flex-col min-h-screen bg-background ${theme === 'dark' ? 'dark' : ''}`}>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <motion.header 
+        className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
         <div className="container flex h-14 items-center justify-between px-4 md:px-6">
           <Link className="flex items-center space-x-2" href="/">
-            <Brain className="h-6 w-6" />
-            <span className="font-bold text-lg md:text-xl">GeminiMind</span>
+            <motion.div
+              whileHover={{ rotate: 360, scale: 1.2 }}
+              transition={{ duration: 0.6 }}
+            >
+              <Brain className="h-6 w-6 text-primary" />
+            </motion.div>
+            <motion.span 
+              className="font-bold text-lg md:text-xl"
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              GeminiMind
+            </motion.span>
           </Link>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            <Link href="#features" className="hover:text-primary transition-colors">Features</Link>
-            <Link href="#demo" className="hover:text-primary transition-colors">Demo</Link>
-            <Link href="#testimonials" className="hover:text-primary transition-colors">Testimonials</Link>
-            <Link href="#pricing" className="hover:text-primary transition-colors">Pricing</Link>
+            {['Features', 'Demo', 'Testimonials', 'Pricing'].map((item, index) => (
+              <motion.div
+                key={item}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * (index + 1) }}
+              >
+                <Link 
+                  href={`#${item.toLowerCase()}`} 
+                  className="hover:text-primary transition-colors relative group"
+                >
+                  {item}
+                  <motion.span
+                    className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                </Link>
+              </motion.div>
+            ))}
           </nav>
           <div className="flex items-center space-x-2">
-            <Button variant="outline" className="hidden md:inline-flex">Log in</Button>
-            <Button className="hidden md:inline-flex">Sign up</Button>
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
-            </Button>
-            <Button
-              variant="ghost"
-              className="md:hidden"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            <motion.div 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
             >
-              {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
-            </Button>
+              <Button variant="outline" className="hidden md:inline-flex">Log in</Button>
+            </motion.div>
+            <motion.div 
+              whileHover={{ scale: 1.05 }} 
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+            >
+              <Button className="hidden md:inline-flex">Sign up</Button>
+            </motion.div>
+            <motion.div 
+              whileHover={{ scale: 1.1 }} 
+              whileTap={{ scale: 0.9 }}
+              initial={{ opacity: 0, rotate: -180 }}
+              animate={{ opacity: 1, rotate: 0 }}
+              transition={{ delay: 0.5, type: "spring" }}
+            >
+              <Button variant="ghost" size="icon" onClick={toggleTheme}>
+                {theme === 'light' ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
+              </Button>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="md:hidden"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.6 }}
+            >
+              <Button
+                variant="ghost"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
+              </Button>
+            </motion.div>
           </div>
         </div>
         <AnimatePresence>
@@ -332,17 +514,37 @@ export function LandingPage() {
               transition={{ duration: 0.3 }}
             >
               <div className="container py-4 space-y-2">
-                <Link href="#features" className="block py-2 hover:text-primary transition-colors">Features</Link>
-                <Link href="#demo" className="block py-2 hover:text-primary transition-colors">Demo</Link>
-                <Link href="#testimonials" className="block py-2 hover:text-primary transition-colors">Testimonials</Link>
-                <Link href="#pricing" className="block py-2 hover:text-primary transition-colors">Pricing</Link>
-                <Button variant="outline" className="w-full mt-2">Log in</Button>
-                <Button className="w-full mt-2">Sign up</Button>
+                {['Features', 'Demo', 'Testimonials', 'Pricing'].map((item, index) => (
+                  <motion.div
+                    key={item}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.1 * index }}
+                  >
+                    <Link href={`#${item.toLowerCase()}`} className="block py-2 hover:text-primary transition-colors">
+                      {item}
+                    </Link>
+                  </motion.div>
+                ))}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <Button variant="outline" className="w-full mt-2">Log in</Button>
+                </motion.div>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                >
+                  <Button className="w-full mt-2">Sign up</Button>
+                </motion.div>
               </div>
             </motion.nav>
           )}
         </AnimatePresence>
-      </header>
+      </motion.header>
 
       <main className="flex-1">
         <motion.section
@@ -407,9 +609,23 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
               >
-                <Button size="lg" className="mt-6 group">
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <Button size="lg" className="mt-6 group relative overflow-hidden">
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-primary to-primary-foreground"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  <motion.span className="relative z-10 flex items-center">
+                    Get Started
+                    <motion.span
+                      initial={{ x: 0 }}
+                      whileHover={{ x: 5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </motion.span>
+                  </motion.span>
                 </Button>
               </motion.div>
             </div>
@@ -420,18 +636,18 @@ export function LandingPage() {
           <div className="container px-4 md:px-6">
             <motion.h2
               className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-center mb-8 md:mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={fadeInUpVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               Empowering Features
             </motion.h2>
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
+              variants={staggerChildrenVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               {[
@@ -448,21 +664,46 @@ export function LandingPage() {
                 <motion.div
                   key={index}
                   className="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl bg-background group"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
+                  variants={fadeInUpVariants}
+                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary-foreground/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary-foreground/20"
+                    initial={{ opacity: 0 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
                   <div className="relative p-6">
-                    <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
+                    <motion.div 
+                      className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300"
+                      animate={floatingAnimation}
+                    >
                       <feature.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <h3 className="text-lg sm:text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300">{feature.title}</h3>
-                    <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
+                    </motion.div>
+                    <motion.h3 
+                      className="text-lg sm:text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300"
+                      initial={{ y: 20, opacity: 0 }}
+                      whileInView={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      {feature.title}
+                    </motion.h3>
+                    <motion.p 
+                      className="text-sm sm:text-base text-muted-foreground"
+                      initial={{ y: 20, opacity: 0 }}
+                      whileInView={{ y: 0, opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      {feature.description}
+                    </motion.p>
                   </div>
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  <motion.div 
+                    className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
                 </motion.div>
               ))}
             </motion.div>
@@ -473,14 +714,21 @@ export function LandingPage() {
           <div className="container px-4 md:px-6">
             <motion.h2
               className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-center mb-8 md:mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={fadeInUpVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               Experience GeminiMind
             </motion.h2>
-            <ChatInterface />
+            <motion.div
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <ChatInterface />
+            </motion.div>
           </div>
         </section>
 
@@ -488,18 +736,18 @@ export function LandingPage() {
           <div className="container px-4 md:px-6">
             <motion.h2
               className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-center mb-8 md:mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={fadeInUpVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               What Students Say
             </motion.h2>
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
+              variants={staggerChildrenVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               {[
@@ -516,17 +764,38 @@ export function LandingPage() {
                 <motion.div
                   key={index}
                   className="relative overflow-hidden rounded-lg shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl bg-background group"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
+                  variants={fadeInUpVariants}
+                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+                  <motion.div 
+                    className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
                   <div className="p-6">
-                    <Quote className="h-8 w-8 text-primary mb-4 transform group-hover:rotate-12 transition-transform duration-300" />
-                    <p className="text-sm sm:text-base text-muted-foreground mb-4">{testimonial.content}</p>
-                    <div className="flex items-center">
+                    <motion.div
+                      initial={{ rotate: 0 }}
+                      whileHover={{ rotate: 12 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Quote className="h-8 w-8 text-primary mb-4" />
+                    </motion.div>
+                    <motion.p 
+                      className="text-sm sm:text-base text-muted-foreground mb-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                    >
+                      {testimonial.content}
+                    </motion.p>
+                    <motion.div 
+                      className="flex items-center"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2 }}
+                    >
                       <Avatar className="h-10 w-10 mr-3">
                         <AvatarImage src={testimonial.image} alt={testimonial.author} />
                         <AvatarFallback>{testimonial.author[0]}</AvatarFallback>
@@ -535,7 +804,7 @@ export function LandingPage() {
                         <p className="font-semibold group-hover:text-primary transition-colors duration-300">{testimonial.author}</p>
                         <p className="text-sm text-muted-foreground">Age {testimonial.age}</p>
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </motion.div>
               ))}
@@ -547,18 +816,18 @@ export function LandingPage() {
           <div className="container px-4 md:px-6">
             <motion.h2
               className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter text-center mb-8 md:mb-12"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
+              variants={fadeInUpVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               Choose Your Plan
             </motion.h2>
             <motion.div
               className="grid grid-cols-1 md:grid-cols-3 gap-8"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ staggerChildren: 0.1 }}
+              variants={staggerChildrenVariants}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
             >
               {[
@@ -569,27 +838,61 @@ export function LandingPage() {
                 <motion.div
                   key={index}
                   className="flex flex-col p-6 bg-background rounded-lg shadow-lg border border-primary relative overflow-hidden group"
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.05 }}
+                  variants={fadeInUpVariants}
+                  whileHover={{ scale: 1.05, rotate: 1 }}
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-                  <h3 className="text-xl sm:text-2xl font-bol d mb-2 group-hover:text-primary transition-colors duration-300">{plan.name}</h3>
-                  <p className="text-2xl sm:text-3xl font-bold mb-4">{plan.price}</p>
+                  <motion.div 
+                    className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
+                    initial={{ scaleX: 0 }}
+                    whileHover={{ scaleX: 1 }}
+                    transition={{ duration: 0.3 }}
+                  />
+                  <motion.h3 
+                    className="text-xl sm:text-2xl font-bold mb-2 group-hover:text-primary transition-colors duration-300"
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.1 }}
+                  >
+                    {plan.name}
+                  </motion.h3>
+                  <motion.p 
+                    className="text-2xl sm:text-3xl font-bold mb-4"
+                    initial={{ y: 20, opacity: 0 }}
+                    whileInView={{ y: 0, opacity: 1 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    {plan.price}
+                  </motion.p>
                   <ul className="mb-6 space-y-2 flex-grow">
                     {plan.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-center text-sm sm:text-base">
+                      <motion.li 
+                        key={idx} 
+                        className="flex items-center text-sm sm:text-base"
+                        initial={{ opacity: 0, x: -20 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                      >
                         <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0" />
                         <span>{feature}</span>
-                      </li>
+                      </motion.li>
                     ))}
                   </ul>
-                  <Button className="w-full mt-auto group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                    Choose Plan
-                    <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </Button>
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button className="w-full mt-auto group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
+                      Choose Plan
+                      <motion.span
+                        initial={{ x: 0 }}
+                        whileHover={{ x: 5 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </motion.span>
+                    </Button>
+                  </motion.div>
                 </motion.div>
               ))}
             </motion.div>
@@ -598,53 +901,110 @@ export function LandingPage() {
 
         <motion.section
           className="w-full py-12 md:py-24 lg:py-32 bg-gradient-to-t from-background to-muted"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          variants={fadeInUpVariants}
+          initial="hidden"
+          whileInView="visible"
           viewport={{ once: true }}
         >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter">
+              <motion.h2 
+                className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter"
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1 }}
+              >
                 Ready to Prioritize Your Mental Health?
-              </h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground text-sm sm:text-base md:text-lg">
+              </motion.h2>
+              <motion.p 
+                className="mx-auto max-w-[700px] text-muted-foreground text-sm sm:text-base md:text-lg"
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+              >
                 Join thousands of students who have found support and guidance with GeminiMind.
-              </p>
-              <Button size="lg" className="mt-6 group">
-                Start Your Journey
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
+              </motion.p>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                whileInView={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+              >
+                <Button size="lg" className="mt-6 group relative overflow-hidden">
+                  <motion.span
+                    className="absolute inset-0 bg-gradient-to-r from-primary to-primary-foreground"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: '100%' }}
+                    transition={{ duration: 0.5 }}
+                  />
+                  <motion.span className="relative z-10 flex items-center">
+                    Start Your Journey
+                    <motion.span
+                      initial={{ x: 0 }}
+                      whileHover={{ x: 5 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </motion.span>
+                  </motion.span>
+                </Button>
+              </motion.div>
             </div>
           </div>
         </motion.section>
       </main>
 
-      <footer className="w-full py-6 bg-muted">
+      <motion.footer 
+        className="w-full py-6 bg-muted"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+      >
         <div className="container px-4 md:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center space-x-2">
+            <motion.div 
+              className="flex items-center space-x-2"
+              initial={{ x: -20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+            >
               <Brain className="h-6 w-6" />
               <span className="font-bold">GeminiMind</span>
-            </div>
-            <nav className="flex flex-wrap justify-center gap-4 sm:gap-6">
-              <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="#">
-                Terms of Service
-              </Link>
-              <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="#">
-                Privacy Policy
-              </Link>
-              <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="#">
-                Contact Us
-              </Link>
-            </nav>
+            </motion.div>
+            <motion.nav 
+              className="flex flex-wrap justify-center gap-4 sm:gap-6"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              {['Terms of Service', 'Privacy Policy', 'Contact Us'].map((item) => (
+                <motion.div
+                  key={item}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="#">
+                    {item}
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.nav>
           </div>
         </div>
-      </footer>
+      </motion.footer>
 
       <motion.div
-        className="fixed w-6 h-6 bg-primary rounded-full pointer-events-none z-50"
+        className="fixed w-6 h-6 bg-primary rounded-full pointer-events-none z-50 mix-blend-difference"
         style={{ x, y }}
+        animate={{
+          scale: [1, 1.5, 1],
+          opacity: [0.5, 1, 0.5],
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          repeatType: "reverse",
+        }}
       />
     </div>
   )
