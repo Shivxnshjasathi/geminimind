@@ -5,7 +5,7 @@ import { motion, useScroll, useTransform, AnimatePresence, useSpring, useAnimati
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Brain, MessageCircle, Heart, Shield, Send, Menu, X, Star, Users, Zap, Check, Quote, Info, Loader2, ArrowRight, Sparkles, Lightbulb, Smile, Moon, Sun, Mic, MicOff } from 'lucide-react'
+import { Brain, MessageCircle, Heart, Shield, Send, Menu, X, Star, Users, Zap, Check, Quote, Info, ArrowRight, Sparkles, Lightbulb, Smile, Moon, Sun, Mic, MicOff, Volume2 } from 'lucide-react'
 import Link from 'next/link'
 import {
   Tooltip,
@@ -37,13 +37,16 @@ function ChatInterface() {
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [isListening, setIsListening] = useState(false)
+  const [isSpeaking, setIsSpeaking] = useState(false)
   const chatEndRef = useRef<HTMLDivElement>(null)
   const micControls = useAnimation()
+  const waveformControls = useAnimation()
   const recognitionRef = useRef<SpeechRecognition | null>(null)
-  
+  const synthRef = useRef<SpeechSynthesis | null>(null)
 
   useEffect(() => {
     scrollToBottom()
+    synthRef.current = window.speechSynthesis
   }, [messages])
 
   const scrollToBottom = () => {
@@ -63,6 +66,7 @@ function ChatInterface() {
       const response = await runChat(input)
       const assistantMessage = { role: 'assistant', content: response }
       setMessages(prev => [...prev, assistantMessage])
+      speakResponse(response)
     } catch (error) {
       console.error('Error:', error)
       const errorMessage = { role: 'assistant', content: "I'm sorry, I encountered an error. Please try again." }
@@ -84,7 +88,13 @@ function ChatInterface() {
     setIsListening(true)
     micControls.start({
       scale: [1, 1.2, 1],
-      transition: { duration: 0.5, repeat: Infinity }
+      rotate: [0, 10, -10, 0],
+      transition: { duration: 1, repeat: Infinity }
+    })
+    waveformControls.start({
+      opacity: 1,
+      scale: 1,
+      transition: { duration: 0.3 }
     })
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -105,15 +115,36 @@ function ChatInterface() {
     }
 
     recognitionRef.current.start()
-  }, [micControls])
+  }, [micControls, waveformControls])
 
   const stopListening = useCallback(() => {
     setIsListening(false)
     micControls.stop()
+    waveformControls.start({
+      opacity: 0,
+      scale: 0.8,
+      transition: { duration: 0.3 }
+    })
     if (recognitionRef.current) {
       recognitionRef.current.stop()
     }
-  }, [micControls])
+  }, [micControls, waveformControls])
+
+  const speakResponse = (text: string) => {
+    if (synthRef.current) {
+      setIsSpeaking(true)
+      const utterance = new SpeechSynthesisUtterance(text)
+      utterance.onend = () => setIsSpeaking(false)
+      synthRef.current.speak(utterance)
+    }
+  }
+
+  const stopSpeaking = () => {
+    if (synthRef.current) {
+      synthRef.current.cancel()
+      setIsSpeaking(false)
+    }
+  }
 
   async function runChat(prompt: string) {
     const genAI = new GoogleGenerativeAI(API_KEY)
@@ -169,23 +200,53 @@ function ChatInterface() {
       transition: {
         type: "spring",
         stiffness: 100,
-        damping: 15
+        damping: 15,
+        when: "beforeChildren",
+        staggerChildren: 0.1
       }
     }
   }
 
   const messageVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 20, scale: 0.9 },
     visible: { 
       opacity: 1, 
       y: 0,
+      scale: 1,
       transition: {
         type: "spring",
-        stiffness: 100,
-        damping: 10
+        stiffness: 200,
+        damping: 20
       }
     }
   }
+
+  const waveformVariants = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: { 
+      opacity: 1, 
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut"
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.8,
+      transition: {
+        duration: 0.3,
+        ease: "easeIn"
+      }
+    }
+  }
+
+  
+  
+  
+  
+
+ 
 
   return (
     <motion.div 
@@ -248,9 +309,14 @@ function ChatInterface() {
                     ? 'bg-primary text-primary-foreground' 
                     : 'bg-muted'
                 }`}
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 20,
+                  delay: index * 0.1 // Stagger effect
+                }}
               >
                 <p className="text-sm">{message.content}</p>
               </motion.div>
@@ -261,21 +327,42 @@ function ChatInterface() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
             className="flex justify-start"
           >
             <div className="max-w-[80%] p-3 rounded-lg bg-muted">
               <motion.div
-                animate={{
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 180, 360],
+                variants={{
+                  animate: {
+                    scale: [1, 1.2, 1],
+                    rotate: [0, 180, 360],
+                    borderRadius: ["20%", "50%", "20%"],
+                    transition: {
+                      duration: 2,
+                      ease: "easeInOut",
+                      times: [0, 0.5, 1],
+                      repeat: Infinity,
+                      repeatType: "loop"
+                    }
+                  }
                 }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
+                animate="animate"
+                className="w-8 h-8 bg-primary/20"
               >
-                <Loader2 className="h-5 w-5" />
+                <motion.div
+                  className="w-full h-full flex items-center justify-center"
+                  animate={{
+                    rotate: [0, 360],
+                  }}
+                  transition={{
+                    duration: 2,
+                    ease: "linear",
+                    repeat: Infinity
+                  }}
+                >
+                  <div className="w-3 h-3 bg-primary rounded-full" />
+                </motion.div>
               </motion.div>
             </div>
           </motion.div>
@@ -297,27 +384,116 @@ function ChatInterface() {
             onChange={(e) => setInput(e.target.value)}
             className="flex-1"
           />
-          <motion.div animate={micControls}>
-            <Button type="button" size="icon" onClick={toggleVoiceInput} className={isListening ? 'bg-primary text-primary-foreground' : ''}>
-              {isListening ? (
+          <motion.div className="relative">
+            <motion.div animate={micControls}>
+              <Button 
+                type="button" 
+                size="icon" 
+                onClick={toggleVoiceInput} 
+                className={isListening ? 'bg-primary text-primary-foreground' : ''}
+              >
+                {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                <span className="sr-only">{isListening ? 'Stop voice input' : 'Start voice input'}</span>
+              </Button>
+            </motion.div>
+            <AnimatePresence>
+              {isListening && (
                 <motion.div
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 180, 360],
-                  }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "linear",
-                  }}
+                  className="absolute -top-40 left-1/2 transform -translate-x-1/2"
+                  variants={waveformVariants}
+                  initial="initial"
+                  animate="animate"
+                  exit="exit"
                 >
-                  <MicOff className="h-5 w-5" />
+                  <motion.div 
+                    className="relative w-40 h-40"
+                    animate={waveformControls}
+                  >
+                    <motion.div
+                      className="absolute inset-0 bg-primary/20 rounded-full"
+                      variants={{
+                        animate: {
+                          scale: [1, 1.2, 1],
+                          opacity: [0.7, 0.3, 0.7],
+                          transition: {
+                            duration: 1.5,
+                            ease: "easeInOut",
+                            times: [0, 0.5, 1],
+                            repeat: Infinity,
+                            repeatType: "reverse" as const
+                          }
+                        }
+                      }}
+                      animate="animate"
+                    />
+                    {[...Array(3)].map((_, index) => (
+                      <motion.div
+                        key={index}
+                        className="absolute inset-0 border-2 border-primary rounded-full"
+                        custom={index}
+                        variants={{
+                          animate: (i: number) => ({
+                            scale: [1, 1.5, 1],
+                            opacity: [0.5, 1, 0.5],
+                            transition: {
+                              duration: 2,
+                              ease: "easeInOut",
+                              times: [0, 0.5, 1],
+                              repeat: Infinity,
+                              repeatType: "reverse" as const,
+                              delay: i * 0.2
+                            }
+                          })
+                        }}
+                        animate="animate"
+                      />
+                    ))}
+                    {[...Array(20)].map((_, index) => (
+                      <motion.div
+                        key={`particle-${index}`}
+                        className="absolute w-2 h-2 bg-primary rounded-full"
+                        style={{
+                          left: `${50 + Math.cos(index * Math.PI / 10) * 20}%`,
+                          top: `${50 + Math.sin(index * Math.PI / 10) * 20}%`,
+                        }}
+                        custom={index}
+                        variants={{
+                          animate: (i: number) => ({
+                            y: [0, -20, 0],
+                            x: Math.sin(i) * 10,
+                            opacity: [0, 1, 0],
+                            scale: [0.8, 1, 0.8],
+                            transition: {
+                              duration: 2,
+                              ease: "easeInOut",
+                              times: [0, 0.5, 1],
+                              repeat: Infinity,
+                              repeatType: "reverse" as const,
+                              delay: i * 0.1
+                            }
+                          })
+                        }}
+                        animate="animate"
+                      />
+                    ))}
+                    <motion.div 
+                      className="absolute inset-0 flex items-center justify-center"
+                      animate={{
+                        scale: [1, 1.1, 1],
+                        rotate: [0, 5, -5, 0],
+                        transition: {
+                          duration: 2,
+                          repeat: Infinity,
+                          repeatType: "reverse"
+                        }
+                      }}
+                    >
+                      <Mic className="h-12 w-12 text-primary" />
+                    </motion.div>
+                  </motion.div>
                 </motion.div>
-              ) : (
-                <Mic className="h-5 w-5" />
               )}
-              <span className="sr-only">{isListening ? 'Stop voice input' : 'Start voice input'}</span>
-            </Button>
+            </AnimatePresence>
           </motion.div>
           <motion.div
             whileHover={{ scale: 1.05 }}
@@ -326,6 +502,57 @@ function ChatInterface() {
             <Button type="submit" size="icon" disabled={isTyping}>
               <Send className="h-5 w-5" />
               <span className="sr-only">Send message</span>
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button 
+              type="button" 
+              size="icon" 
+              onClick={isSpeaking ? stopSpeaking : () => speakResponse(messages[messages.length - 1].content)}
+            >
+              {isSpeaking ? (
+                <motion.div
+                  variants={{
+                    animate: {
+                      scale: [1, 1.05, 1],
+                      rotate: [0, 2, -2, 0],
+                      transition: {
+                        duration: 1.5,
+                        ease: "easeInOut",
+                        times: [0, 0.25, 0.75, 1],
+                        repeat: Infinity,
+                        repeatType: "reverse" as const
+                      }
+                    }
+                  }}
+                  animate="animate"
+                  className="relative"
+                >
+                  <Volume2 className="h-5 w-5" />
+                  {[...Array(3)].map((_, index) => (
+                    <motion.div
+                      key={`wave-${index}`}
+                      className="absolute left-full top-1/2 w-2 h-2 bg-primary rounded-full"
+                      animate={{
+                        x: [0, 10, 0],
+                        opacity: [0, 1, 0],
+                        scale: [0.5, 1, 0.5],
+                      }}
+                      transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        delay: index * 0.2,
+                      }}
+                    />
+                  ))}
+                </motion.div>
+              ) : (
+                <Volume2 className="h-5 w-5" />
+              )}
+              <span className="sr-only">{isSpeaking ? 'Stop speaking' : 'Read response'}</span>
             </Button>
           </motion.div>
         </div>
@@ -406,7 +633,6 @@ export function LandingPage() {
       ease: "easeInOut"
     }
   }
-
 
   return (
     <div className={`flex flex-col min-h-screen bg-background ${theme === 'dark' ? 'dark' : ''}`}>
@@ -564,7 +790,9 @@ export function LandingPage() {
             className="absolute -top-20 -left-20 w-60 h-60 bg-primary/20 rounded-full filter blur-3xl"
             animate={{
               x: [0, 100, 0],
-              y: [0, 50, 0],
+              y: [0,
+
+ 50, 0],
               scale: [1, 1.1, 1],
             }}
             transition={{
