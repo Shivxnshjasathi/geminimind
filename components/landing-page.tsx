@@ -32,7 +32,7 @@ You offer real-time coping strategies in moments of distress and provide positiv
 
 function ChatInterface() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I'm GeminiMind, your AI companion. How can I support you today?" }
+    { role: 'assistant', content: "Hello! I'm Serenity, your AI companion. How can I support you today?" }
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -241,13 +241,6 @@ function ChatInterface() {
     }
   }
 
-  
-  
-  
-  
-
- 
-
   return (
     <motion.div 
       className="flex flex-col h-[600px] max-w-2xl mx-auto bg-background rounded-xl shadow-xl overflow-hidden border border-primary/20"
@@ -268,10 +261,10 @@ function ChatInterface() {
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
           <Avatar>
-            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="GeminiMind" />
+            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="Serenity" />
             <AvatarFallback><Brain className="h-6 w-6" /></AvatarFallback>
           </Avatar>
-          <span className="font-semibold text-lg">GeminiMind</span>
+          <span className="font-semibold text-lg">Serenity</span>
         </motion.div>
         <TooltipProvider>
           <Tooltip>
@@ -287,7 +280,7 @@ function ChatInterface() {
               </motion.div>
             </TooltipTrigger>
             <TooltipContent>
-              <p>GeminiMind is an AI assistant designed to provide mental health support.</p>
+              <p>Serenity is an AI assistant designed to provide mental health support.</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -656,7 +649,7 @@ export function LandingPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              GeminiMind
+              Serenity
             </motion.span>
           </Link>
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
@@ -830,7 +823,7 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                GeminiMind uses advanced AI to provide empathetic support, helping students navigate their emotional challenges and improve mental well-being.
+                Serenity uses advanced AI to provide empathetic support, helping students navigate their emotional challenges and improve mental well-being.
               </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
@@ -947,7 +940,7 @@ export function LandingPage() {
               whileInView="visible"
               viewport={{ once: true }}
             >
-              Experience GeminiMind
+              Experience Serenity
             </motion.h2>
             <motion.div
               initial={{ opacity: 0, y: 50 }}
@@ -979,15 +972,15 @@ export function LandingPage() {
               viewport={{ once: true }}
             >
               {[
-                { content: "GeminiMind has been a lifesaver during my exams. It's like having a supportive friend available 24/7.", author: "Sarah", age: 20, image: "https://i.pravatar.cc/150?img=1" },
+                { content: "Serenity has been a lifesaver during my exams. It's like having a supportive friend available 24/7.", author: "Sarah", age: 20, image: "https://i.pravatar.cc/150?img=1" },
                 { content: "I was skeptical at first, but the AI's empathy and insights have genuinely helped me manage my anxiety.", author: "Mike", age: 22, image: "https://i.pravatar.cc/150?img=2" },
-                { content: "As an international student, GeminiMind has been crucial in helping me navigate cultural differences and homesickness.", author: "Yuki", age: 19, image: "https://i.pravatar.cc/150?img=3" },
+                { content: "As an international student, Serenity has been crucial in helping me navigate cultural differences and homesickness.", author: "Yuki", age: 19, image: "https://i.pravatar.cc/150?img=3" },
                 { content: "The personalized coping strategies have made a huge difference in how I handle stress. It's like having a pocket therapist!", author: "Alex", age: 21, image: "https://i.pravatar.cc/150?img=4" },
-                { content: "GeminiMind's ability to understand context and provide relevant advice is impressive. It's more than just a chatbot.", author: "Priya", age: 23, image: "https://i.pravatar.cc/150?img=5" },
+                { content: "Serenity's ability to understand context and provide relevant advice is impressive. It's more than just a chatbot.", author: "Priya", age: 23, image: "https://i.pravatar.cc/150?img=5" },
                 { content: "The peer support feature connected me with others facing similar challenges. It's comforting to know I'm not alone.", author: "Jordan", age: 18, image: "https://i.pravatar.cc/150?img=6" },
-                { content: "I love how GeminiMind helps me track my mood over time. It's really eye-opening to see my emotional patterns.", author: "Emma", age: 20, image: "https://i.pravatar.cc/150?img=7" },
+                { content: "I love how Serenity helps me track my mood over time. It's really eye-opening to see my emotional patterns.", author: "Emma", age: 20, image: "https://i.pravatar.cc/150?img=7" },
                 { content: "The skill-building exercises have given me practical tools to manage my emotions better. I feel more in control now.", author: "Liam", age: 22, image: "https://i.pravatar.cc/150?img=8" },
-                { content: "GeminiMind's positive reinforcement keeps me motivated. It's like having a cheerleader in my pocket!", author: "Zoe", age: 19, image: "https://i.pravatar.cc/150?img=9" }
+                { content: "Serenity's positive reinforcement keeps me motivated. It's like having a cheerleader in my pocket!", author: "Zoe", age: 19, image: "https://i.pravatar.cc/150?img=9" }
               ].map((testimonial, index) => (
                 <motion.div
                   key={index}
@@ -1150,7 +1143,7 @@ export function LandingPage() {
                 whileInView={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
               >
-                Join thousands of students who have found support and guidance with GeminiMind.
+                Join thousands of students who have found support and guidance with Serenity.
               </motion.p>
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
@@ -1197,7 +1190,7 @@ export function LandingPage() {
               transition={{ delay: 0.2 }}
             >
               <Brain className="h-6 w-6" />
-              <span className="font-bold">GeminiMind</span>
+              <span className="font-bold">Serenity</span>
             </motion.div>
             <motion.nav 
               className="flex flex-wrap justify-center gap-4 sm:gap-6"
@@ -1211,7 +1204,7 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="#">
+                  <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="https://www.shivanshjasathi.co/">
                     {item}
                   </Link>
                 </motion.div>
