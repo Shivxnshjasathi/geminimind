@@ -2,7 +2,7 @@
 
 This project is an AI-powered chatbot or virtual assistant designed to provide mental health and emotional support to students. The chatbot leverages Gemini's advanced natural language understanding and empathy capabilities to offer supportive, non-judgmental, and caring responses. It is built using [Next.js](https://nextjs.org) and the [Gemini API](https://developers.google.com/generative-ai) to ensure real-time, responsive interactions.
 
-hosted on - https://geminimind-iota.vercel.app/
+hosted on - [https://geminimind-iota.vercel.app/](https://serenityai.vercel.app/)
 
 ## Features
 
@@ -92,6 +92,9 @@ Contributions are welcome! Please follow these steps to contribute:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+[Serenity_AI_Introductory_Document.pdf](https://github.com/user-attachments/files/17342205/Serenity_AI_Introductory_Document.pdf)
+
 
 ---
 
