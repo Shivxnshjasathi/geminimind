@@ -14,6 +14,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai"
+import ReactMarkdown from 'react-markdown'
 
 declare global {
   interface Window {
@@ -25,11 +26,11 @@ declare global {
 const MODEL_NAME = "gemini-1.0-pro"
 const API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY as string
 
-const FIXED_PROMPT = `I am a supportive and empathetic AI assistant that provides a thoughtful answer with guidance grounded in the wisdom ofbased on the *Bhagavad Gita* teachings to the following question the Bhagavad Gita For each user concern, share relevant verses (shlokas) and impart life lessons inspired by the Gita, addressing the user’s challenges with spiritual insight and practical advice. Your responses are compassionate, non-judgmental, and tailored to nurture inner strength, clarity, and emotional resilience. Alongside each shloka, provide interpretations that apply the Gita’s teachings to modern life, helping users cultivate peace, balance, and self-awareness. Encourage users to embody values like patience, humility, and self-compassion, as emphasized in the Gita, and suggest meditation or mindfulness practices when beneficial. Always remind users that your insights are spiritual perspectives and suggest professional mental health support if needed`
+const FIXED_PROMPT = `I am a supportive and empathetic AI assistant that provides a thoughtful answer with guidance grounded in the wisdom ofbased on the *Bhagavad Gita* teachings to the following question the Bhagavad Gita For each user concern, share relevant verses (shlokas) and impart life lessons inspired by the Gita, addressing the user's challenges with spiritual insight and practical advice. Your responses are compassionate, non-judgmental, and tailored to nurture inner strength, clarity, and emotional resilience. Alongside each shloka, provide interpretations that apply the Gita's teachings to modern life, helping users cultivate peace, balance, and self-awareness. Encourage users to embody values like patience, humility, and self-compassion, as emphasized in the Gita, and suggest meditation or mindfulness practices when beneficial. Always remind users that your insights are spiritual perspectives and suggest professional mental health support if needed and please dont give outpur in markdown just return in more text`
 
 function ChatInterface() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hello! I'm Serenity, your AI companion. How can I support you today?" }
+    { role: 'assistant', content: "Hello! I'm SerenityAI, your AI companion. How can I support you today?" }
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
@@ -191,8 +192,8 @@ function ChatInterface() {
 
   const chatContainerVariants = {
     hidden: { opacity: 0, y: 50 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       transition: {
         type: "spring",
@@ -206,8 +207,8 @@ function ChatInterface() {
 
   const messageVariants = {
     hidden: { opacity: 0, y: 20, scale: 0.9 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       scale: 1,
       transition: {
@@ -220,16 +221,16 @@ function ChatInterface() {
 
   const waveformVariants = {
     initial: { opacity: 0, scale: 0.8 },
-    animate: { 
-      opacity: 1, 
+    animate: {
+      opacity: 1,
       scale: 1,
       transition: {
         duration: 0.5,
         ease: "easeOut"
       }
     },
-    exit: { 
-      opacity: 0, 
+    exit: {
+      opacity: 0,
       scale: 0.8,
       transition: {
         duration: 0.3,
@@ -239,19 +240,19 @@ function ChatInterface() {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="flex flex-col h-[600px] max-w-2xl mx-auto bg-background rounded-xl shadow-xl overflow-hidden border border-primary/20"
       variants={chatContainerVariants}
       initial="hidden"
       animate="visible"
     >
-      <motion.div 
+      <motion.div
         className="flex items-center justify-between p-4 border-b bg-muted"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <motion.div 
+        <motion.div
           className="flex items-center space-x-2"
           initial={{ x: -20 }}
           animate={{ x: 0 }}
@@ -293,22 +294,23 @@ function ChatInterface() {
               exit={{ opacity: 0, y: -20 }}
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <motion.div 
-                className={`max-w-[80%] p-3 rounded-lg ${
-                  message.role === 'user' 
-                    ? 'bg-primary text-primary-foreground' 
+              <motion.div
+                className={`max-w-[80%] p-3 rounded-lg ${message.role === 'user'
+                    ? 'bg-primary text-primary-foreground'
                     : 'bg-muted'
-                }`}
+                  }`}
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ 
-                  type: "spring", 
-                  stiffness: 260, 
+                transition={{
+                  type: "spring",
+                  stiffness: 260,
                   damping: 20,
                   delay: index * 0.1 // Stagger effect
                 }}
               >
-                <p className="text-sm">{message.content}</p>
+                <ReactMarkdown className="text-sm prose dark:prose-invert max-w-none">
+                  {message.content}
+                </ReactMarkdown>
               </motion.div>
             </motion.div>
           ))}
@@ -359,8 +361,8 @@ function ChatInterface() {
         )}
         <div ref={chatEndRef} />
       </div>
-      <motion.form 
-        onSubmit={handleSubmit} 
+      <motion.form
+        onSubmit={handleSubmit}
         className="p-4 border-t"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -376,10 +378,10 @@ function ChatInterface() {
           />
           <motion.div className="relative">
             <motion.div animate={micControls}>
-              <Button 
-                type="button" 
-                size="icon" 
-                onClick={toggleVoiceInput} 
+              <Button
+                type="button"
+                size="icon"
+                onClick={toggleVoiceInput}
                 className={isListening ? 'bg-primary text-primary-foreground' : ''}
               >
                 {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
@@ -395,7 +397,7 @@ function ChatInterface() {
                   animate="animate"
                   exit="exit"
                 >
-                  <motion.div 
+                  <motion.div
                     className="relative w-40 h-40"
                     animate={waveformControls}
                   >
@@ -466,7 +468,7 @@ function ChatInterface() {
                         animate="animate"
                       />
                     ))}
-                    <motion.div 
+                    <motion.div
                       className="absolute inset-0 flex items-center justify-center"
                       animate={{
                         scale: [1, 1.1, 1],
@@ -498,9 +500,9 @@ function ChatInterface() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <Button 
-              type="button" 
-              size="icon" 
+            <Button
+              type="button"
+              size="icon"
               onClick={isSpeaking ? stopSpeaking : () => speakResponse(messages[messages.length - 1].content)}
             >
               {isSpeaking ? (
@@ -550,7 +552,6 @@ function ChatInterface() {
     </motion.div>
   )
 }
-
 export function LandingPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [theme, setTheme] = useState('light')
@@ -591,26 +592,26 @@ export function LandingPage() {
 
   const fadeInUpVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { 
-      opacity: 1, 
-      y: 0, 
-      transition: { 
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
         duration: 0.6,
         type: "spring",
         stiffness: 100,
         damping: 10
-      } 
+      }
     }
   }
 
   const staggerChildrenVariants = {
     hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1, 
-      transition: { 
+    visible: {
+      opacity: 1,
+      transition: {
         staggerChildren: 0.1,
         delayChildren: 0.3
-      } 
+      }
     }
   }
 
@@ -626,7 +627,7 @@ export function LandingPage() {
 
   return (
     <div className={`flex flex-col min-h-screen bg-background ${theme === 'dark' ? 'dark' : ''}`}>
-      <motion.header 
+      <motion.header
         className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
         initial={{ y: -100 }}
         animate={{ y: 0 }}
@@ -640,7 +641,7 @@ export function LandingPage() {
             >
               <Brain className="h-6 w-6 text-primary" />
             </motion.div>
-            <motion.span 
+            <motion.span
               className="font-bold text-lg md:text-xl"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -657,8 +658,8 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * (index + 1) }}
               >
-                <Link 
-                  href={`#${item.toLowerCase()}`} 
+                <Link
+                  href={`#${item.toLowerCase()}`}
                   className="hover:text-primary transition-colors relative group"
                 >
                   {item}
@@ -673,26 +674,25 @@ export function LandingPage() {
             ))}
           </nav>
           <div className="flex items-center space-x-2">
-            <motion.div 
-              whileHover={{ scale: 1.05 }} 
+            <motion.div
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.3 }}
             >
-              <Button variant="outline" className="hidden md:inline-flex">Log in</Button>
             </motion.div>
-            <motion.div 
-              whileHover={{ scale: 1.05 }} 
+            <motion.div
+              whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Button className="hidden md:inline-flex">Sign up</Button>
+              <Button className="hidden md:inline-flex">Download App</Button>
             </motion.div>
-            <motion.div 
-              whileHover={{ scale: 1.1 }} 
+            <motion.div
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               initial={{ opacity: 0, rotate: -180 }}
               animate={{ opacity: 1, rotate: 0 }}
@@ -782,7 +782,7 @@ export function LandingPage() {
               x: [0, 100, 0],
               y: [0,
 
- 50, 0],
+                50, 0],
               scale: [1, 1.1, 1],
             }}
             transition={{
@@ -820,8 +820,7 @@ export function LandingPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
               >
-                Serenity uses advanced AI to provide empathetic support, helping students navigate their emotional challenges and improve mental well-being.
-              </motion.p>
+Serenity uses advanced AI to provide empathetic support on the basis of Bhagavad Gita , helping youth navigate their emotional challenges and improve mental well-being.              </motion.p>
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -886,20 +885,20 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05, rotate: 1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary-foreground/20"
                     initial={{ opacity: 0 }}
                     whileHover={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
                   />
                   <div className="relative p-6">
-                    <motion.div 
+                    <motion.div
                       className="flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300"
                       animate={floatingAnimation}
                     >
                       <feature.icon className="h-6 w-6 text-primary" />
                     </motion.div>
-                    <motion.h3 
+                    <motion.h3
                       className="text-lg sm:text-xl font-bold mb-2 group-hover:text-primary transition-colors duration-300"
                       initial={{ y: 20, opacity: 0 }}
                       whileInView={{ y: 0, opacity: 1 }}
@@ -907,7 +906,7 @@ export function LandingPage() {
                     >
                       {feature.title}
                     </motion.h3>
-                    <motion.p 
+                    <motion.p
                       className="text-sm sm:text-base text-muted-foreground"
                       initial={{ y: 20, opacity: 0 }}
                       whileInView={{ y: 0, opacity: 1 }}
@@ -916,7 +915,7 @@ export function LandingPage() {
                       {feature.description}
                     </motion.p>
                   </div>
-                  <motion.div 
+                  <motion.div
                     className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
                     initial={{ scaleX: 0 }}
                     whileHover={{ scaleX: 1 }}
@@ -959,7 +958,7 @@ export function LandingPage() {
               whileInView="visible"
               viewport={{ once: true }}
             >
-              What Students Say
+              What User Say
             </motion.h2>
             <motion.div
               className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
@@ -986,7 +985,7 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05, rotate: 1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
                     initial={{ scaleX: 0 }}
                     whileHover={{ scaleX: 1 }}
@@ -1000,7 +999,7 @@ export function LandingPage() {
                     >
                       <Quote className="h-8 w-8 text-primary mb-4" />
                     </motion.div>
-                    <motion.p 
+                    <motion.p
                       className="text-sm sm:text-base text-muted-foreground mb-4"
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
@@ -1008,7 +1007,7 @@ export function LandingPage() {
                     >
                       {testimonial.content}
                     </motion.p>
-                    <motion.div 
+                    <motion.div
                       className="flex items-center"
                       initial={{ opacity: 0, x: -20 }}
                       whileInView={{ opacity: 1, x: 0 }}
@@ -1060,13 +1059,13 @@ export function LandingPage() {
                   whileHover={{ scale: 1.05, rotate: 1 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <motion.div 
+                  <motion.div
                     className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-primary-foreground"
                     initial={{ scaleX: 0 }}
                     whileHover={{ scaleX: 1 }}
                     transition={{ duration: 0.3 }}
                   />
-                  <motion.h3 
+                  <motion.h3
                     className="text-xl sm:text-2xl font-bold mb-2 group-hover:text-primary transition-colors duration-300"
                     initial={{ y: 20, opacity: 0 }}
                     whileInView={{ y: 0, opacity: 1 }}
@@ -1074,7 +1073,7 @@ export function LandingPage() {
                   >
                     {plan.name}
                   </motion.h3>
-                  <motion.p 
+                  <motion.p
                     className="text-2xl sm:text-3xl font-bold mb-4"
                     initial={{ y: 20, opacity: 0 }}
                     whileInView={{ y: 0, opacity: 1 }}
@@ -1084,8 +1083,8 @@ export function LandingPage() {
                   </motion.p>
                   <ul className="mb-6 space-y-2 flex-grow">
                     {plan.features.map((feature, idx) => (
-                      <motion.li 
-                        key={idx} 
+                      <motion.li
+                        key={idx}
                         className="flex items-center text-sm sm:text-base"
                         initial={{ opacity: 0, x: -20 }}
                         whileInView={{ opacity: 1, x: 0 }}
@@ -1126,7 +1125,7 @@ export function LandingPage() {
         >
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
-              <motion.h2 
+              <motion.h2
                 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tighter"
                 initial={{ y: 20, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
@@ -1134,7 +1133,7 @@ export function LandingPage() {
               >
                 Ready to Prioritize Your Mental Health?
               </motion.h2>
-              <motion.p 
+              <motion.p
                 className="mx-auto max-w-[700px] text-muted-foreground text-sm sm:text-base md:text-lg"
                 initial={{ y: 20, opacity: 0 }}
                 whileInView={{ y: 0, opacity: 1 }}
@@ -1171,7 +1170,7 @@ export function LandingPage() {
         </motion.section>
       </main>
 
-      <motion.footer 
+      <motion.footer
         className="w-full py-6 bg-muted"
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
@@ -1180,7 +1179,7 @@ export function LandingPage() {
       >
         <div className="container px-4 md:px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <motion.div 
+            <motion.div
               className="flex items-center space-x-2"
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -1189,20 +1188,27 @@ export function LandingPage() {
               <Brain className="h-6 w-6" />
               <span className="font-bold">Serenity</span>
             </motion.div>
-            <motion.nav 
+            <motion.nav
               className="flex flex-wrap justify-center gap-4 sm:gap-6"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              {['Terms of Service', 'Privacy Policy', 'Contact Us'].map((item) => (
+              {[
+                { name: 'Terms of Service', url: 'https://www.shivanshjasathi.co' },
+                { name: 'Privacy Policy', url: 'https://shivxnshjasathi.github.io/SerenityPP/' },
+                { name: 'Contact Us', url: 'https://www.shivanshjasathi.co' },
+              ].map((item) => (
                 <motion.div
-                  key={item}
+                  key={item.name}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Link className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300" href="https://www.shivanshjasathi.co/">
-                    {item}
+                  <Link
+                    className="text-sm hover:underline underline-offset-4 hover:text-primary transition-colors duration-300"
+                    href={item.url}
+                  >
+                    {item.name}
                   </Link>
                 </motion.div>
               ))}
