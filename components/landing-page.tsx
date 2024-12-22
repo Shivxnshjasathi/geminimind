@@ -770,15 +770,6 @@ export function LandingPage() {
     >
       Download App
     </Button>
-                  <Button variant="outline" className="w-full mt-2"
-                     onClick={() =>
-        window.open(
-          "https://forms.gle/BhXwnGFXmFUxFbKn7",
-          "_blank", // Opens in a new tab
-          "noopener,noreferrer" // Ensures security
-        )
-      }
-                    >Any suggestion</Button>
                 </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -1237,7 +1228,7 @@ Serenity uses advanced AI to provide empathetic support on the basis of Bhagavad
               transition={{ delay: 0.3 }}
             >
               {[
-                { name: 'Terms of Service', url: 'https://www.shivanshjasathi.co' },
+                { name: 'Feedback', url: 'https://forms.gle/BhXwnGFXmFUxFbKn7' },
                 { name: 'Privacy Policy', url: 'https://shivxnshjasathi.github.io/SerenityPP/' },
                 { name: 'Contact Us', url: 'https://www.shivanshjasathi.co' },
               ].map((item) => (
