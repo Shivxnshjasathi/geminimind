@@ -689,7 +689,18 @@ export function LandingPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-             <Button className="hidden md:inline-flex">Download App</Button> 
+              <Button
+      className="hidden md:inline-flex"
+      onClick={() =>
+        window.open(
+          "https://drive.google.com/file/d/1KKvAKL23Yx2s-7x9V6u2vpEYo4Alb47K/view?usp=sharing",
+          "_blank", // Opens in a new tab
+          "noopener,noreferrer" // Ensures security
+        )
+      }
+    >
+      Download App
+    </Button>
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.1 }}
