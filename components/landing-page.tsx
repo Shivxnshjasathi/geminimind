@@ -689,18 +689,7 @@ export function LandingPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.4 }}
             >
-              <Link
-      href="https://drive.google.com/file/d/1KKvAKL23Yx2s-7x9V6u2vpEYo4Alb47K/view?usp=sharing"
-      passHref // Ensures proper handling of the `href` attribute
-    >
-      <Button
-        className="hidden md:inline-flex"
-        target="_blank" // Opens in a new tab
-        rel="noopener noreferrer" // Prevents security risks
-      >
-        Download App
-      </Button>
-    </Link>
+             <Button className="hidden md:inline-flex">Download App</Button> 
             </motion.div>
             <motion.div
               whileHover={{ scale: 1.1 }}
