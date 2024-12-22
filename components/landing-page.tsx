@@ -758,6 +758,18 @@ export function LandingPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
                 >
+                   <Button
+      className="hidden md:inline-flex"
+      onClick={() =>
+        window.open(
+          "https://drive.google.com/file/d/1KKvAKL23Yx2s-7x9V6u2vpEYo4Alb47K/view?usp=sharing",
+          "_blank", // Opens in a new tab
+          "noopener,noreferrer" // Ensures security
+        )
+      }
+    >
+      Download App
+    </Button>
                   <Button variant="outline" className="w-full mt-2"
                      onClick={() =>
         window.open(
